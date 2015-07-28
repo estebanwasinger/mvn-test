@@ -1,17 +1,18 @@
 package org.mule.tools.devkit;
 
-
-import com.intellij.openapi.util.SystemInfo;
-import com.intellij.util.SystemProperties;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Map;
 
-public class MavenUtil {
+/**
+ * Created by estebanwasinger on 7/28/15.
+ */
+public class MavenUtil2 {
     public static final String MAVEN_NOTIFICATION_GROUP = "Maven";
     public static final String SETTINGS_XML = "settings.xml";
     public static final String DOT_M2_DIR = ".m2";
@@ -26,6 +27,12 @@ public class MavenUtil {
 
 
     private static volatile Map<String, String> ourPropertiesFromMvnOpts;
+
+    public static final String OS_NAME = System.getProperty("os.name");
+    public static final String OS_VERSION = System.getProperty("os.version").toLowerCase(Locale.US);
+
+    public static final boolean isMac = OS_NAME.toLowerCase().startsWith("mac");
+    public static final boolean isLinux = OS_NAME.toLowerCase().startsWith("linux");
 
     @Nullable
     public static File resolveMavenHomeDirectory() {
@@ -46,7 +53,7 @@ public class MavenUtil {
             }
         }
 
-        String userHome = SystemProperties.getUserHome();
+        String userHome = getUserHome();
         if (!isEmptyOrSpaces(userHome)) {
             final File underUserHome = new File(userHome, M2_DIR);
             if (isValidMavenHome(underUserHome)) {
@@ -54,7 +61,7 @@ public class MavenUtil {
             }
         }
 
-        if (SystemInfo.isMac) {
+        if (isMac) {
             File home = fromBrew();
             if (home != null) {
                 return home;
@@ -64,7 +71,7 @@ public class MavenUtil {
                 return home;
             }
         }
-        else if (SystemInfo.isLinux) {
+        else if (isLinux) {
             File home = new File("/usr/share/maven");
             if (isValidMavenHome(home)) {
                 return home;
@@ -75,7 +82,7 @@ public class MavenUtil {
                 return home;
             }
         }
-    return null;
+        return null;
     }
 
     @Nullable
@@ -147,8 +154,13 @@ public class MavenUtil {
 
     @NotNull
     public static File resolveM2Dir() {
-        return new File(SystemProperties.getUserHome(), DOT_M2_DIR);
+        return new File(getUserHome(), DOT_M2_DIR);
     }
+
+    public static String getUserHome() {
+        return System.getProperty("user.home");
+    }
+
 
     public static int compareVersionNumbers(@Nullable String v1, @Nullable String v2) {
         // todo duplicates com.intellij.util.text.VersionComparatorUtil.compare
